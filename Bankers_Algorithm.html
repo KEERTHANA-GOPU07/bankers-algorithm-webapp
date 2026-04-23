@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Banker's Algorithm Tool</title>
+
+    <style>
+       body {
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    margin: 0;
+    color: white;
+}
+
+/* HEADER */
+header {
+    text-align: center;
+    padding: 25px;
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* CONTAINER */
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* GLASS CARD */
+.card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    padding: 20px;
+    border-radius: 18px;
+    margin-top: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+/* INPUT */
+input {
+    margin: 6px;
+    padding: 10px;
+    width: 65px;
+    text-align: center;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    transition: 0.3s;
+}
+
+input:focus {
+    background: rgba(255,255,255,0.35);
+    transform: scale(1.1);
+}
+
+/* BUTTON */
+button {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    border: none;
+    color: white;
+    padding: 12px 22px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0,198,255,0.5);
+}
+table {
+    border-collapse: separate;   /* important */
+    border-spacing: 20px 10px;   /* horizontal | vertical gap */
+}
+
+th, td {
+    text-align: center;
+}
+
+/* TABLE */
+table {
+    margin: 20px auto;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+td {
+    padding: 12px;
+    text-align: center;
+    background: rgba(255,255,255,0.1);
+}
+
+tr:hover td {
+    background: rgba(255,255,255,0.25);
+}
+
+/* RESULT BOX */
+.result-box {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    animation: fadeIn 0.5s ease;
+}
+
+.safe {
+    background: rgba(0, 200, 83, 0.8);
+}
+
+.unsafe {
+    background: rgba(255, 0, 0, 0.7);
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+/* SECTION TITLES */
+h3 {
+    border-left: 5px solid #00c6ff;
+    padding-left: 10px;
+}
+    </style>
+</head>
+
+<body>
+
+    <header>
+        Banker's Algorithm Solver
+    </header>
+
+    <div class="container">
+
+        <div class="card">
+            <h3>Enter Inputs</h3>
+
+            Number of Processes:
+            <input id="p" type="number" value="3">
+
+            Number of Resources:
+            <input id="r" type="number" value="3">
+
+            <br><br>
+
+            <button onclick="gen()">Generate</button>
+        </div>
+
+        <div id="main" class="card" style="display:none"></div>
+
+    </div>
+
+
+    <script>
+
+        let n, m;
+
+        function gen() {
+
+            n = parseInt(p.value);
+            m = parseInt(r.value);
+
+            main.style.display = 'block';
+
+            // let html = "<h3>Available Resources</h3>";
+
+            // for (let j = 0; j < m; j++) {
+            //     html += `<input type="number" id="a${j}" min="0" max="10" value="0">`;
+            // }
+let html = "<h3>Available Resources</h3>";
+
+html += "<div style='text-align:center;'>";
+
+for (let j = 0; j < m; j++) {
+    html += `<div style="display:inline-block; margin:8px; text-align:center">
+                <label>R${j}</label><br>
+                <input type="number" id="a${j}" min="0" max="10" value="0">
+             </div>`;
+}
+
+html += "</div>";
+
+            
+            html += "<h3>Allocation Matrix</h3><table>";
+
+html += "<tr><th>Process</th>";
+for (let j = 0; j < m; j++) {
+    html += `<th>R${j}</th>`;
+}
+html += "</tr>";
+
+for (let i = 0; i < n; i++) {
+
+    html += "<tr>";
+
+    // ✅ Process label
+    html += `<td>P${i}</td>`;
+
+    for (let j = 0; j < m; j++) {
+        html += `<td><input type="number" id="al${i}${j}" value="0"></td>`;
+    }
+
+    html += "</tr>";
+}
+
+            html += "</table>";
+
+
+           
+            html += "<h3>Max Matrix</h3><table>";
+
+html += "<tr><th>Process</th>";
+for (let j = 0; j < m; j++) {
+    html += `<th>R${j}</th>`;
+}
+html += "</tr>";
+
+for (let i = 0; i < n; i++) {
+
+    html += "<tr>";
+
+    // ✅ Process label
+    html += `<td>P${i}</td>`;
+
+    for (let j = 0; j < m; j++) {
+        html += `<td><input type="number" id="mx${i}${j}" value="0"></td>`;
+    }
+
+    html += "</tr>";
+}
+
+            html += "</table>";
+/* Process dropdown */
+html += "<h3>Request (Optional)</h3>";
+
+html += `<div style="text-align:center;">
+            Process Number:<br>
+            <input type="number" id="reqp" min="0" max="${n-1}" value="0">
+         </div><br>`;
+
+html += "<b style='display:block; text-align:center;'>Request Resources:</b>";
+
+html += "<div style='margin-top:10px; text-align:center;'>";
+for (let j = 0; j < m; j++) {
+    html += `<div style="display:inline-block; margin:5px; text-align:center">
+                <label>R${j}</label><br>
+                <input type="number" id="req${j}" min="0" max="10" value="0">
+             </div>`;
+}
+html += "</div>";
+            html += "<br><br>";
+
+            // html += "<button onclick='solve()'>Solve</button>";
+
+            // html += "<div id='result'></div>";
+            html += `<div style="text-align:center; margin-top:15px;">
+            <button onclick='solve()'>Solve</button>
+         </div>`;
+
+html += `<div id='result' style="text-align:left; margin-top:15px;"></div>`;
+
+            main.innerHTML = html;
+        }
+
+
+        function solve() {
+
+            let avail = [];
+            let alloc = [];
+            let max = [];
+            let need = [];
+
+
+            // Available
+            for (let j = 0; j < m; j++) {
+                avail[j] = +document.getElementById(`a${j}`).value;
+            }
+
+
+            // Allocation, Max, Need
+            for (let i = 0; i < n; i++) {
+
+                alloc[i] = [];
+                max[i] = [];
+                need[i] = [];
+
+                for (let j = 0; j < m; j++) {
+
+                    alloc[i][j] = +document.getElementById(`al${i}${j}`).value;
+
+                    max[i][j] = +document.getElementById(`mx${i}${j}`).value;
+
+                    need[i][j] = max[i][j] - alloc[i][j];
+                }
+            }
+
+
+            // Need Matrix Display
+            let out = "";
+    out += "<h3>Need Matrix</h3><table>";
+// Header row
+out += "<tr><th>Process</th>";
+for (let j = 0; j < m; j++) {
+    out += `<th>R${j}</th>`;
+}
+out += "</tr>";
+
+// Data rows
+for (let i = 0; i < n; i++) {
+
+    out += "<tr>";
+
+    // ✅ Process label
+    out += `<td>P${i}</td>`;
+
+    for (let j = 0; j < m; j++) {
+        out += `<td><input value="${need[i][j]}" disabled></td>`;
+    }
+
+    out += "</tr>";
+}
+
+out += "</table>";
+
+            // All Safe Sequences (original)
+            let seqs = [];
+
+            function backtrack(av, fin, seq) {
+
+                if (seq.length == n) {
+                    seqs.push([...seq]);
+                    return;
+                }
+
+                for (let i = 0; i < n; i++) {
+
+                    if (!fin[i]) {
+
+                        let ok = true;
+
+                        for (let j = 0; j < m; j++) {
+                            if (need[i][j] > av[j]) ok = false;
+                        }
+
+                        if (ok) {
+
+                            let newAv = [...av];
+
+                            for (let j = 0; j < m; j++) {
+                                newAv[j] += alloc[i][j];
+                            }
+
+                            fin[i] = true;
+                            seq.push("P" + i);
+
+                            backtrack(newAv, fin, seq);
+
+                            seq.pop();
+                            fin[i] = false;
+                        }
+                    }
+                }
+            }
+
+            backtrack(avail.slice(), Array(n).fill(false), []);
+
+
+            if (seqs.length > 0) {
+
+                out += "<div class='result-box safe' style='text-align:center;'>✅ System is Safe</div>";
+out += "<h3>All Safe Sequences</h3>";
+ out += "<div style='text-align:center;'>";
+
+                seqs.forEach(s => {
+                    out += s.join(" → ") + "<br>";
+                });
+out += "</div>"; 
+            } else {
+                
+                out += "<div class='result-box unsafe' style='text-align:center;'>❌ System is NOT Safe</div>";
+            }
+
+
+            // Request Handling + sequences after request
+            let rp = document.getElementById("reqp").value;
+
+            if (rp !== "") {
+
+                let pid = parseInt(rp);
+                let req = [];
+
+                for (let j = 0; j < m; j++) {
+                    req[j] = +document.getElementById(`req${j}`).value;
+                }
+
+                let can = true;
+
+                for (let j = 0; j < m; j++) {
+                    if (req[j] > need[pid][j] || req[j] > avail[j]) {
+                        can = false;
+                    }
+                }
+
+                if (can) {
+                   out += "<div class='result-box safe' style='text-align:center;'>✅ Request Granted</div>";
+                    // simulate allocation
+                    let newAvail = [...avail];
+                    let newAlloc = alloc.map(row => [...row]);
+                    let newNeed = need.map(row => [...row]);
+
+                    for (let j = 0; j < m; j++) {
+                        newAvail[j] -= req[j];
+                        newAlloc[pid][j] += req[j];
+                        newNeed[pid][j] -= req[j];
+                    }
+
+                    // find sequences after request
+                    let newSeqs = [];
+
+                    function backtrack2(av, fin, seq) {
+                        if (seq.length == n) {
+                            newSeqs.push([...seq]);
+                            return;
+                        }
+
+                        for (let i = 0; i < n; i++) {
+                            if (!fin[i]) {
+                                let ok = true;
+                                for (let j = 0; j < m; j++) {
+                                    if (newNeed[i][j] > av[j]) ok = false;
+                                }
+                                if (ok) {
+                                    let temp = [...av];
+                                    for (let j = 0; j < m; j++) {
+                                        temp[j] += newAlloc[i][j];
+                                    }
+                                    fin[i] = true;
+                                    seq.push("P" + i);
+                                    backtrack2(temp, fin, seq);
+                                    seq.pop();
+                                    fin[i] = false;
+                                }
+                            }
+                        }
+                    }
+
+                    backtrack2(newAvail.slice(), Array(n).fill(false), []);
+
+                    if (newSeqs.length > 0) {
+                        out += "<h3>Safe Sequences After Request</h3>";
+                         out += "<div style='text-align:center;'>";
+                        newSeqs.forEach(s => {
+                            out += s.join(" → ") + "<br>";
+                        });
+                        out += "</div>";
+                    } else {
+                        out += "<h4>❌ No Safe Sequence After Request</h4>";
+                    }
+
+                } else {
+                  out += "<div class='result-box unsafe' style='text-align:center;'>❌ Request Denied</div>";
+                }
+            }
+
+            result.innerHTML = out;
+        }
+
+   
+
+        // Move to next input on Enter key
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+
+                const inputs = Array.from(document.querySelectorAll("input"));
+                const index = inputs.indexOf(document.activeElement);
+
+                if (index > -1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>
